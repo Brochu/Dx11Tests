@@ -25,8 +25,10 @@ class CDemoTexture : public CDx11Base
     protected:
     ID3D11VertexShader* m_pVS;
     ID3D11PixelShader* m_pPS;
+    
     ID3D11InputLayout* m_pInputLayout;
     ID3D11Buffer* m_pVertexBuffer;
+    
     ID3D11ShaderResourceView* m_pColorMap;
     ID3D11SamplerState* m_pColorMapSampler;
 };

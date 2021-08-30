@@ -179,6 +179,9 @@ void CDemoTexture::UnloadContent()
 
 void CDemoTexture::Update()
 {
+    CDx11Base::Update();
+
+    //TODO: Update time constant buffer
 }
 
 void CDemoTexture::Render()

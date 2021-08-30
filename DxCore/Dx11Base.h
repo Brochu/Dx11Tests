@@ -8,6 +8,7 @@
 #include <d3dcompiler.h>
 #include <dxerr.h>
 #include <xnamath.h>
+#include <chrono>
 
 class CDx11Base
 {
@@ -27,7 +28,7 @@ class CDx11Base
     virtual bool LoadContent() = 0;
     virtual void UnloadContent() = 0;
 
-    virtual void Update() = 0;
+    virtual void Update();
     virtual void Render() = 0;
 
     // Attributes
@@ -38,4 +39,8 @@ class CDx11Base
     ID3D11DeviceContext* m_pD3DContext;
     ID3D11RenderTargetView*	m_pD3DRenderTargetView;
     IDXGISwapChain* m_pSwapChain;
+
+    std::chrono::time_point<std::chrono::steady_clock> startPoint;
+    float elapsedTime = 0.f;
+    float deltaTime = 0.f;
 };

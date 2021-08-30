@@ -4,7 +4,9 @@
 // By Geelix School of Serious Games and Edutainment.
 
 #include "Dx11Base.h"
+
 #include <string>
+#include <fstream>
 
 CDx11Base::CDx11Base()
 {
@@ -130,6 +132,9 @@ bool CDx11Base::Initialize(HWND hWnd, HINSTANCE hInst)
     viewPort.TopLeftY = 0;
     m_pD3DContext->RSSetViewports(1, &viewPort);
 
+    //Time values setup
+    startPoint = std::chrono::steady_clock::now();
+
     // Load content
     return LoadContent();
 }
@@ -182,4 +187,14 @@ bool CDx11Base::CompileShader(LPCWSTR szFilePath, LPCSTR szFunc, LPCSTR szShader
     if (errBuffer != NULL)
         errBuffer->Release( );
     return true;
+}
+
+void CDx11Base::Update()
+{
+    const auto nowPoint = std::chrono::steady_clock::now();
+    const std::chrono::duration<float> duration = nowPoint - startPoint;
+
+    const auto time = duration.count();
+    deltaTime = time - elapsedTime;
+    elapsedTime = time;
 }
