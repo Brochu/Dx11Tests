@@ -13,6 +13,12 @@ struct Vertex
     XMFLOAT2 tex0;
 };
 
+// Time values struct
+struct TimeValues
+{
+    XMFLOAT4 Time; // Elapsed, Delta, Elasped/2, Delta/2
+};
+
 //////////////////////////////////////////////////////////////////////
 // Constructors
 
@@ -20,10 +26,14 @@ CDemoTexture::CDemoTexture()
 {
     m_pVS = NULL;
     m_pPS = NULL;
+    
     m_pInputLayout = NULL;
     m_pVertexBuffer = NULL;
+    
     m_pColorMap = NULL;
     m_pColorMapSampler = NULL;
+
+    m_pTimeValues = NULL;
 }
 
 CDemoTexture::~CDemoTexture()
@@ -128,6 +138,14 @@ bool CDemoTexture::LoadContent()
         return false;
     }
 
+    // Create time values buffer
+    D3D11_BUFFER_DESC TimeValuesDesc;
+    ZeroMemory(&TimeValuesDesc, sizeof(vertexDesc));
+    TimeValuesDesc.Usage = D3D11_USAGE_DEFAULT;
+    TimeValuesDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+    TimeValuesDesc.ByteWidth = sizeof(TimeValues);
+    hr = m_pD3DDevice->CreateBuffer(&TimeValuesDesc, nullptr, &m_pTimeValues);
+
     // Load texture
     hr = ::D3DX11CreateShaderResourceViewFromFile(
         m_pD3DDevice, L"Content/borg.dds", 0, 0, &m_pColorMap, 0);
@@ -160,21 +178,30 @@ void CDemoTexture::UnloadContent()
     if (m_pColorMap)
         m_pColorMap->Release();
     m_pColorMap = NULL;
+    
     if (m_pColorMapSampler)
         m_pColorMapSampler->Release();
     m_pColorMapSampler = NULL;
+    
     if (m_pVS)
         m_pVS->Release();
     m_pVS = NULL;
+    
     if (m_pPS)
         m_pPS->Release();
     m_pPS = NULL;
+    
     if (m_pInputLayout)
         m_pInputLayout->Release();
     m_pInputLayout = NULL;
+    
     if (m_pVertexBuffer)
         m_pVertexBuffer->Release();
     m_pVertexBuffer = NULL;
+
+    if (m_pTimeValues)
+        m_pTimeValues->Release();
+    m_pTimeValues = NULL;
 }
 
 void CDemoTexture::Update()

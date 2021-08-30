@@ -31,4 +31,6 @@ class CDemoTexture : public CDx11Base
     
     ID3D11ShaderResourceView* m_pColorMap;
     ID3D11SamplerState* m_pColorMapSampler;
+
+    ID3D11Buffer* m_pTimeValues;
 };
