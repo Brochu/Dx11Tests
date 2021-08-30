@@ -13,7 +13,6 @@ struct Vertex
     XMFLOAT2 tex0;
 };
 
-
 //////////////////////////////////////////////////////////////////////
 // Constructors
 
@@ -30,7 +29,6 @@ CDemoTexture::CDemoTexture()
 CDemoTexture::~CDemoTexture()
 {
 }
-
 
 //////////////////////////////////////////////////////////////////////
 // Overrides
@@ -193,7 +191,6 @@ void CDemoTexture::Render()
     float color[4] = { 0.0f, 0.0f, 0.5f, 1.0f };
     m_pD3DContext->ClearRenderTargetView(m_pD3DRenderTargetView, color);
 
-
     // Stride and offset
     UINT stride = sizeof(Vertex);
     UINT offset = 0;
@@ -204,6 +201,7 @@ void CDemoTexture::Render()
     m_pD3DContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
     // Set shaders
+    //TODO: Add constant buffer for time values to pixel shader
     m_pD3DContext->VSSetShader(m_pVS, 0, 0);
     m_pD3DContext->PSSetShader(m_pPS, 0, 0);
     m_pD3DContext->PSSetShaderResources(0, 1, &m_pColorMap);
@@ -211,7 +209,6 @@ void CDemoTexture::Render()
 
     // Draw triangles
     m_pD3DContext->Draw(6, 0);
-
 
     // Present back buffer to display
     m_pSwapChain->Present(0, 0);

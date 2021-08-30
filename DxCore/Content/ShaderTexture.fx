@@ -1,7 +1,6 @@
 // ShaderTexture.fx : Implements the shader.
 //
 // By Geelix School of Serious Games and Edutainment.
-//
 
 
 Texture2D colorMap : register(t0);
