@@ -1,10 +1,10 @@
-﻿#include "Dx11Base.h"
+﻿#pragma once
 // Dx11Base.cpp : Implements the CDx11Base class.
 //
 // By Geelix School of Serious Games and Edutainment.
-//
 
 #include "Dx11Base.h"
+#include <string>
 
 CDx11Base::CDx11Base()
 {
@@ -20,10 +20,8 @@ CDx11Base::~CDx11Base()
 {
 }
 
-
 //////////////////////////////////////////////////////////////////////
 // Overrides
-
 
 bool CDx11Base::Initialize(HWND hWnd, HINSTANCE hInst)
 {
@@ -94,7 +92,7 @@ bool CDx11Base::Initialize(HWND hWnd, HINSTANCE hInst)
 
     // Check device
     if (FAILED(hr))	{
-        MessageBox(hWnd, TEXT("A DX11 Video Card is Required"), TEXT("ERROR"), MB_OK);
+        ::MessageBox(hWnd, TEXT("A DX11 Video Card is Required"), TEXT("ERROR"), MB_OK);
         return false;
     }
 
@@ -102,7 +100,7 @@ bool CDx11Base::Initialize(HWND hWnd, HINSTANCE hInst)
     ID3D11Texture2D *pBackBuffer;
     hr = m_pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&pBackBuffer);
     if (FAILED(hr)) {
-        MessageBox(hWnd, TEXT("Unable to get back buffer"), TEXT("ERROR"), MB_OK);
+        ::MessageBox(hWnd, TEXT("Unable to get back buffer"), TEXT("ERROR"), MB_OK);
         return false;
     }
 
@@ -115,7 +113,7 @@ bool CDx11Base::Initialize(HWND hWnd, HINSTANCE hInst)
 
     // Check render target view
     if (FAILED(hr)) {
-        MessageBox(hWnd, TEXT("Unable to create render target view"), TEXT("ERROR"), MB_OK);
+        ::MessageBox(hWnd, TEXT("Unable to create render target view"), TEXT("ERROR"), MB_OK);
         return false;
     }
 
@@ -154,4 +152,34 @@ void CDx11Base::Terminate()
     if (m_pD3DDevice != NULL)
         m_pD3DDevice->Release();
     m_pD3DDevice= NULL;
+}
+
+bool CDx11Base::CompileShader(LPCWSTR szFilePath, LPCSTR szFunc, LPCSTR szShaderModel, ID3DBlob** buffer)
+{
+    // Set flags
+    DWORD flags = D3DCOMPILE_ENABLE_STRICTNESS;
+#ifdef _DEBUG
+    flags |= D3DCOMPILE_DEBUG;
+#endif
+    
+    // Compile shader
+    HRESULT hr;
+    ID3DBlob* errBuffer = 0;
+    hr = ::D3DX11CompileFromFile(
+        szFilePath, 0, 0, szFunc, szShaderModel,
+        flags, 0, 0, buffer, &errBuffer, 0);
+
+    // Check for errors
+    if (FAILED(hr)) {
+        if (errBuffer != NULL) {
+            ::OutputDebugStringA((char*)errBuffer->GetBufferPointer());
+            errBuffer->Release();
+        }
+        return false;
+    }
+    
+    // Cleanup
+    if (errBuffer != NULL)
+        errBuffer->Release( );
+    return true;
 }

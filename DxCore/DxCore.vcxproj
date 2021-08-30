@@ -19,11 +19,17 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="DemoTexture.cpp" />
     <ClCompile Include="Dx11Base.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="DemoTexture.h" />
     <ClInclude Include="Dx11Base.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Content\borg.dds" />
+    <Content Include="Content\ShaderTexture.fx" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>

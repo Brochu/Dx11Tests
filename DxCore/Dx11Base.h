@@ -1,22 +1,13 @@
 ﻿#pragma once
-
-class Dx11Base
-{
-public:
-    
-};
 // Dx11Base.h : Defines the CDx11Base class.
 //
 // By Geelix School of Serious Games and Edutainment.
-//
-
-#ifndef _DX11BASE_H_
-#define _DX11BASE_H_
 
 #include <d3d11.h>
 #include <d3dx11.h>
+#include <d3dcompiler.h>
 #include <dxerr.h>
-
+#include <xnamath.h>
 
 class CDx11Base
 {
@@ -29,6 +20,7 @@ class CDx11Base
     public:
     bool Initialize(HWND hWnd, HINSTANCE hInst);
     void Terminate();
+    bool CompileShader(LPCWSTR szFilePath, LPCSTR szFunc, LPCSTR szShaderModel, ID3DBlob** buffer);
 
     // Overrides
     public:
@@ -47,6 +39,3 @@ class CDx11Base
     ID3D11RenderTargetView*	m_pD3DRenderTargetView;
     IDXGISwapChain* m_pSwapChain;
 };
-
-
-#endif // _DX11BASE_H_
