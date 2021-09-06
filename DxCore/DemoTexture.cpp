@@ -11,6 +11,17 @@ struct Vertex
 {
     XMFLOAT3 pos;
     XMFLOAT2 tex0;
+
+    static void AddNew(Vertex* v, unsigned int& idx , int x, unsigned int y, float offset, XMFLOAT2 start)
+    {
+        v[idx++] = { XMFLOAT3( start.x + (x * offset), start.y + (y * offset), 1.0f ), XMFLOAT2( 0.0f, 0.0f ) };
+        v[idx++] = { XMFLOAT3( start.x + (x * offset), start.y + (y * offset) + offset, 1.0f ), XMFLOAT2( 0.0f, 1.0f ) };
+        v[idx++] = { XMFLOAT3( start.x + (x * offset) + offset, start.y + (y * offset) + offset, 1.0f ), XMFLOAT2( 1.0f, 1.0f ) };
+        
+        v[idx++] = { XMFLOAT3( start.x + (x * offset) + offset, start.y + (y * offset) + offset, 1.0f ), XMFLOAT2( 1.0f, 1.0f ) };
+        v[idx++] = { XMFLOAT3( start.x + (x * offset) + offset, start.y + (y * offset), 1.0f ), XMFLOAT2( 1.0f, 0.0f ) };
+        v[idx++] = { XMFLOAT3( start.x + (x * offset), start.y + (y * offset), 1.0f ), XMFLOAT2( 0.0f, 0.0f ) };
+    }
 };
 
 // Time values struct
@@ -108,17 +119,23 @@ bool CDemoTexture::LoadContent()
     pPSBuffer->Release();
     pPSBuffer = NULL;
 
-    // Define triangle
-    Vertex vertices[] =
-    {
-        { XMFLOAT3(  0.4f,  0.5f, 1.0f ), XMFLOAT2( 1.0f, 1.0f ) },
-        { XMFLOAT3(  0.4f, -0.5f, 1.0f ), XMFLOAT2( 1.0f, 0.0f ) },
-        { XMFLOAT3( -0.4f, -0.5f, 1.0f ), XMFLOAT2( 0.0f, 0.0f ) },
+    const uint8_t dim = 3;
+    const float offset = 0.1; // This does not build a correct grid yet
+    //TODO: debug this
+    // Should be building a grid mesh w/ repeating UVs
+    const XMFLOAT2 start = XMFLOAT2(-0.5f, -0.5f);
 
-        { XMFLOAT3( -0.4f, -0.5f, 1.0f ), XMFLOAT2( 0.0f, 0.0f ) },
-        { XMFLOAT3( -0.4f,  0.5f, 1.0f ), XMFLOAT2( 0.0f, 1.0f ) },
-        { XMFLOAT3(  0.4f,  0.5f, 1.0f ), XMFLOAT2( 1.0f, 1.0f ) },
-    };
+    unsigned int vertIndex = 0;
+
+    // Define triangle
+    Vertex vertices[dim*dim*6];
+    for(unsigned int y = 0; y < dim; ++y)
+    {
+        for(unsigned int x = 0; x < dim; ++x)
+        {
+            Vertex::AddNew(vertices, vertIndex, x, y, offset, start);
+        }
+    }
 
     // Vertex description
     D3D11_BUFFER_DESC vertexDesc;
@@ -238,7 +255,7 @@ void CDemoTexture::Render()
     m_pD3DContext->PSSetSamplers(0, 1, &m_pColorMapSampler);
 
     // Draw triangles
-    m_pD3DContext->Draw(6, 0);
+    m_pD3DContext->Draw(54, 0);
 
     // Present back buffer to display
     m_pSwapChain->Present(0, 0);

@@ -34,5 +34,18 @@ PS_Input VS_Main(VS_Input vertex)
 
 float4 PS_Main(PS_Input frag) : SV_TARGET
 {
-    return colorMap.Sample(colorSampler, frag.tex0);
+    float3 noColor = float3(0, 0, 0);
+    float3 sideColor = float3(1, 0, 0);
+    
+    float width = 0.05;
+    float high = 1.0 - width;
+    float low = width;
+    
+    float3 final =  lerp(noColor, sideColor, step(high, frag.tex0.y));
+    final +=  lerp(sideColor, noColor, step(low, frag.tex0.y));
+    final +=  lerp(sideColor, noColor, step(low, frag.tex0.x));
+    final +=  lerp(noColor, sideColor, step(high, frag.tex0.x));
+    
+    return float4(final, 1);
+    //return colorMap.Sample(colorSampler, frag.tex0);
 }
