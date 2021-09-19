@@ -5,23 +5,13 @@
 //
 
 #include "DemoTexture.h"
+#include <vector>
 
 // Vertex struct
 struct Vertex
 {
     XMFLOAT3 pos;
     XMFLOAT2 tex0;
-
-    static void AddNew(Vertex* v, unsigned int& idx , int x, unsigned int y, float offset, XMFLOAT2 start)
-    {
-        v[idx++] = { XMFLOAT3( start.x + (x * offset), start.y + (y * offset), 1.0f ), XMFLOAT2( 0.0f, 0.0f ) };
-        v[idx++] = { XMFLOAT3( start.x + (x * offset), start.y + (y * offset) + offset, 1.0f ), XMFLOAT2( 0.0f, 1.0f ) };
-        v[idx++] = { XMFLOAT3( start.x + (x * offset) + offset, start.y + (y * offset) + offset, 1.0f ), XMFLOAT2( 1.0f, 1.0f ) };
-        
-        v[idx++] = { XMFLOAT3( start.x + (x * offset) + offset, start.y + (y * offset) + offset, 1.0f ), XMFLOAT2( 1.0f, 1.0f ) };
-        v[idx++] = { XMFLOAT3( start.x + (x * offset) + offset, start.y + (y * offset), 1.0f ), XMFLOAT2( 1.0f, 0.0f ) };
-        v[idx++] = { XMFLOAT3( start.x + (x * offset), start.y + (y * offset), 1.0f ), XMFLOAT2( 0.0f, 0.0f ) };
-    }
 };
 
 // Time values struct
@@ -119,21 +109,37 @@ bool CDemoTexture::LoadContent()
     pPSBuffer->Release();
     pPSBuffer = NULL;
 
-    const uint8_t dim = 3;
-    const float offset = 0.1; // This does not build a correct grid yet
-    //TODO: debug this
-    // Should be building a grid mesh w/ repeating UVs
-    const XMFLOAT2 start = XMFLOAT2(-0.5f, -0.5f);
-
-    unsigned int vertIndex = 0;
-
     // Define triangle
-    Vertex vertices[dim*dim*6];
-    for(unsigned int y = 0; y < dim; ++y)
+    std::vector<Vertex> vertices;
+    for(unsigned int y = 0; y < m_dim; ++y)
     {
-        for(unsigned int x = 0; x < dim; ++x)
+        for(unsigned int x = 0; x < m_dim; ++x)
         {
-            Vertex::AddNew(vertices, vertIndex, x, y, offset, start);
+            vertices.push_back({
+                XMFLOAT3(m_startPos.x + (x * m_gridXSize), m_startPos.y + (y * m_gridYSize), 1),
+                XMFLOAT2( 0.0f, 0.0f )
+            });
+            vertices.push_back({
+                XMFLOAT3(m_startPos.x + (x * m_gridXSize), m_startPos.y + ((y + 1) * m_gridYSize), 1),
+                XMFLOAT2( 0.0f, 1.0f )
+            });
+            vertices.push_back({
+                XMFLOAT3(m_startPos.x + ((x + 1) * m_gridXSize), m_startPos.y + ((y + 1) * m_gridYSize), 1),
+                XMFLOAT2( 1.0f, 1.0f )
+            });
+            
+            vertices.push_back({
+                XMFLOAT3(m_startPos.x + ((x + 1) * m_gridXSize), m_startPos.y + ((y + 1) * m_gridYSize), 1),
+                XMFLOAT2( 1.0f, 1.0f )
+            });
+            vertices.push_back({
+                XMFLOAT3(m_startPos.x + ((x + 1) * m_gridXSize), m_startPos.y + (y * m_gridYSize), 1),
+                XMFLOAT2( 1.0f, 0.0f )
+            });
+            vertices.push_back({
+                XMFLOAT3(m_startPos.x + (x * m_gridXSize), m_startPos.y + (y * m_gridYSize), 1),
+                XMFLOAT2( 0.0f, 0.0f )
+            });
         }
     }
 
@@ -142,12 +148,12 @@ bool CDemoTexture::LoadContent()
     ::ZeroMemory(&vertexDesc, sizeof(vertexDesc));
     vertexDesc.Usage = D3D11_USAGE_DEFAULT;
     vertexDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-    vertexDesc.ByteWidth = sizeof(Vertex) * 6;
+    vertexDesc.ByteWidth = sizeof(Vertex) * m_dim * m_dim * 6;
 
     // Resource data
     D3D11_SUBRESOURCE_DATA resourceData;
     ZeroMemory(&resourceData, sizeof(resourceData));
-    resourceData.pSysMem = vertices;
+    resourceData.pSysMem = static_cast<void*>(vertices.data());
 
     // Create vertex buffer
     hr = m_pD3DDevice->CreateBuffer(&vertexDesc, &resourceData, &m_pVertexBuffer);
@@ -186,6 +192,23 @@ bool CDemoTexture::LoadContent()
         return false;
     }
 
+    D3D11_BLEND_DESC blendDesc; //TODO: Debug why alpha has no effect, maybe the blends are not setup properly.
+    ::ZeroMemory(&blendDesc, sizeof(blendDesc));
+    blendDesc.RenderTarget[0].BlendEnable = true;
+    blendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+    blendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+    blendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+    blendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_SRC_ALPHA;
+    blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_DEST_ALPHA;
+    blendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+    blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+    hr = m_pD3DDevice->CreateBlendState(&blendDesc, &m_pBlendState);
+    if (FAILED(hr))
+    {
+        ::MessageBox(m_hWnd, L"Unable to create blend state", L"ERROR", MB_OK);
+        return false;
+    }
+    
     return true;
 }
 
@@ -199,6 +222,10 @@ void CDemoTexture::UnloadContent()
     if (m_pColorMapSampler)
         m_pColorMapSampler->Release();
     m_pColorMapSampler = NULL;
+
+    if (m_pBlendState)
+        m_pBlendState->Release();
+    m_pBlendState = NULL;
     
     if (m_pVS)
         m_pVS->Release();
@@ -238,6 +265,10 @@ void CDemoTexture::Render()
     float color[4] = { 0.0f, 0.0f, 0.5f, 1.0f };
     m_pD3DContext->ClearRenderTargetView(m_pD3DRenderTargetView, color);
 
+    // Setup blending rules?
+    const FLOAT* blendFactors = new FLOAT[4] { 0, 0, 0, 0 };
+    m_pD3DContext->OMSetBlendState(m_pBlendState, blendFactors, ~0);
+
     // Stride and offset
     UINT stride = sizeof(Vertex);
     UINT offset = 0;
@@ -255,8 +286,10 @@ void CDemoTexture::Render()
     m_pD3DContext->PSSetSamplers(0, 1, &m_pColorMapSampler);
 
     // Draw triangles
-    m_pD3DContext->Draw(54, 0);
+    m_pD3DContext->Draw(m_dim * m_dim * 6, 0);
 
     // Present back buffer to display
     m_pSwapChain->Present(0, 0);
+
+    delete[] blendFactors;
 }

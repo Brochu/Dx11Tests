@@ -32,5 +32,12 @@ class CDemoTexture : public CDx11Base
     ID3D11ShaderResourceView* m_pColorMap;
     ID3D11SamplerState* m_pColorMapSampler;
 
+    ID3D11BlendState* m_pBlendState;
+
     ID3D11Buffer* m_pTimeValues;
+    
+    uint8_t m_dim = 6;
+    float m_gridXSize = 0.2;
+    float m_gridYSize = 0.2;
+    XMFLOAT2 m_startPos = XMFLOAT2(-0.6f, -0.6f);
 };
